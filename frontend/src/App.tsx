@@ -52,7 +52,7 @@ export default function App() {
     queryFn: () => fetchJob(activeJobId ?? ''),
     enabled: Boolean(activeJobId),
     refetchInterval: (data) =>
-      data?.job.status && data.job.status !== 'done' && data.job.status !== 'failed'
+      data?.job && data.job.status !== 'done' && data.job.status !== 'failed'
         ? 1_000
         : false,
   });
@@ -118,7 +118,7 @@ export default function App() {
     mutation.mutate({ text: input, template: templateId, n: variationCount });
   };
 
-  const activeJobStatus = jobQuery.data?.job.status;
+  const activeJobStatus = jobQuery.data?.job?.status;
   const isLoadingJob =
     mutation.isLoading || (activeJobStatus && activeJobStatus !== 'done' && activeJobStatus !== 'failed');
 
