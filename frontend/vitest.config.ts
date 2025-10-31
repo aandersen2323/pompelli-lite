@@ -1,11 +1,12 @@
 import { defineConfig } from 'vitest/config';
 
-const reactPlugin = import('@vitejs/plugin-react')
-  .then((mod) => mod.default())
+const reactPluginFactory = import('@vitejs/plugin-react')
+  .then((mod) => mod.default)
   .catch(() => null);
 
 export default defineConfig(async () => {
-  const plugin = (await reactPlugin)?.();
+  const pluginFactory = await reactPluginFactory;
+  const plugin = pluginFactory?.();
 
   return {
     plugins: plugin ? [plugin] : [],
