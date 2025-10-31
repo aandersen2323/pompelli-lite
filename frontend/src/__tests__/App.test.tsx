@@ -1,6 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import App from '../App';
 
 type FetchMockResponse = {
