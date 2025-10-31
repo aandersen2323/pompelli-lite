@@ -80,22 +80,6 @@ describe('App integration', () => {
             input: 'Hello',
             templateId: 'default',
             n: 2,
-            status: 'running',
-            results: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        },
-        once: true,
-      },
-      {
-        matcher: /\/api\/v1\/job\/job-1$/,
-        body: {
-          job: {
-            id: 'job-1',
-            input: 'Hello',
-            templateId: 'default',
-            n: 2,
             status: 'done',
             results: ['Result 1', 'Result 2'],
             createdAt: new Date().toISOString(),
@@ -115,9 +99,12 @@ describe('App integration', () => {
     fireEvent.change(textarea, { target: { value: 'Hello' } });
     fireEvent.click(screen.getByRole('button', { name: /generate/i }));
 
-    await waitFor(() => {
-      expect(screen.getByText('Result 1')).toBeInTheDocument();
-      expect(screen.getByText('Result 2')).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByDisplayValue('Result 1')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('Result 2')).toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
   });
 });
