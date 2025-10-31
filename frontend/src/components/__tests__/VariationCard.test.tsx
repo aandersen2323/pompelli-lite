@@ -1,8 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { VariationCard } from '../VariationCard';
 
 describe('VariationCard', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   beforeEach(() => {
     Object.assign(navigator, {
       clipboard: {
@@ -25,7 +29,7 @@ describe('VariationCard', () => {
     const handler = vi.fn();
     render(<VariationCard text="Hello" initialFavorite={false} onFavoriteChange={handler} />);
 
-    const [button] = screen.getAllByRole('button', { name: /favorite/i });
+    const button = screen.getByRole('button', { name: /toggle favorite/i });
     fireEvent.click(button);
     expect(handler).toHaveBeenCalledWith(true);
     fireEvent.click(button);

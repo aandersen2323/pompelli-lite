@@ -24,6 +24,7 @@ export function VariationCard({ text, initialFavorite = false, onFavoriteChange 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-slate-700 bg-slate-900/70 p-4 shadow-sm">
       <textarea
+        aria-label="variation result"
         className="min-h-[140px] resize-y rounded-md border border-slate-700 bg-slate-900/60 p-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
         value={editableText}
         onChange={(event) => setEditableText(event.target.value)}
@@ -42,6 +43,7 @@ export function VariationCard({ text, initialFavorite = false, onFavoriteChange 
         <button
           type="button"
           onClick={toggleFavorite}
+          aria-label="toggle favorite"
           className={clsx(
             'rounded-md px-3 py-1 font-medium transition',
             favorite
