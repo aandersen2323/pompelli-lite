@@ -1,14 +1,21 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
+const reactPlugin = import('@vitejs/plugin-react')
+  .then((mod) => mod.default())
+  .catch(() => null);
+
+export default defineConfig(async () => {
+  const plugin = (await reactPlugin)?.();
+
+  return {
+    plugins: plugin ? [plugin] : [],
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+        },
       },
     },
-  },
+  };
 });

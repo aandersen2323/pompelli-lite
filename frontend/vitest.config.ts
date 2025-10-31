@@ -1,13 +1,20 @@
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
 
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
-    coverage: {
-      reporter: ['text', 'html'],
+const reactPlugin = import('@vitejs/plugin-react')
+  .then((mod) => mod.default())
+  .catch(() => null);
+
+export default defineConfig(async () => {
+  const plugin = (await reactPlugin)?.();
+
+  return {
+    plugins: plugin ? [plugin] : [],
+    test: {
+      environment: 'jsdom',
+      setupFiles: ['./vitest.setup.ts'],
+      coverage: {
+        reporter: ['text', 'html'],
+      },
     },
-  },
+  };
 });
