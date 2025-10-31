@@ -25,10 +25,10 @@ describe('VariationCard', () => {
     const handler = vi.fn();
     render(<VariationCard text="Hello" initialFavorite={false} onFavoriteChange={handler} />);
 
-    const [button] = screen.getAllByRole('button', { name: /favorite/i });
+    const button = screen.getByRole('button', { name: /favorite/i });
     fireEvent.click(button);
-    expect(handler).toHaveBeenCalledWith(true);
+    expect(handler).toHaveBeenNthCalledWith(1, true);
     fireEvent.click(button);
-    expect(handler).toHaveBeenCalledWith(false);
+    expect(handler).toHaveBeenNthCalledWith(2, false);
   });
 });

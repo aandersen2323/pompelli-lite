@@ -116,8 +116,8 @@ describe('App integration', () => {
     fireEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('Result 1')).toBeInTheDocument();
-      expect(screen.getByText('Result 2')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Result 1')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Result 2')).toBeInTheDocument();
     });
   });
 });
