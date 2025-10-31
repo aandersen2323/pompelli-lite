@@ -6,6 +6,7 @@ import { InMemoryQueue } from './queue.js';
 import { generateWithAdapter } from './adapters/index.js';
 import { findTemplate, TEMPLATES } from './templates.js';
 import { getJob, listJobs, saveJob } from './store.js';
+import { scanBrandProfile, syncProfileToBaserow } from './services/brandProfile.js';
 import type { Job } from './types.js';
 
 export function buildServer() {
@@ -112,6 +113,29 @@ export function buildServer() {
   });
 
   server.get('/api/v1/history', () => ({ jobs: listJobs() }));
+
+  server.post('/api/v1/brand-scan', async (req, reply) => {
+    const body = req.body as {
+      url?: string;
+      syncToBaserow?: boolean;
+    };
+
+    if (!body?.url) {
+      return reply.code(400).send({ error: 'url is required' });
+    }
+
+    try {
+      const profile = await scanBrandProfile(body.url);
+      const baserow = body.syncToBaserow
+        ? await syncProfileToBaserow(profile)
+        : { status: 'skipped', reason: 'disabled' as const };
+
+      return { profile, baserow };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return reply.code(500).send({ error: message });
+    }
+  });
 
   return server;
 }
