@@ -25,7 +25,7 @@ describe('VariationCard', () => {
     const handler = vi.fn();
     render(<VariationCard text="Hello" initialFavorite={false} onFavoriteChange={handler} />);
 
-    const button = screen.getByRole('button', { name: /favorite/i });
+    const [button] = screen.getAllByRole('button', { name: /favorite/i });
     fireEvent.click(button);
     expect(handler).toHaveBeenCalledWith(true);
     fireEvent.click(button);
