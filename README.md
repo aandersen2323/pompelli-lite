@@ -1,6 +1,6 @@
-# pomelli-lite
+# pompelli-lite
 
-pomelli-lite is a local-first playground for generating AI-powered variations of short text prompts. Paste a snippet, pick a template, and receive multiple rewrites side-by-side with fast editing, copy/export, and lightweight history.
+pompelli-lite is a local-first playground for generating AI-powered variations of short text prompts. Paste a snippet, pick a template, and receive multiple rewrites side-by-side with fast editing, copy/export, and lightweight history.
 
 ## Features
 
@@ -40,6 +40,17 @@ npm run dev
 ```
 
 Vite hosts the app on `http://localhost:5173`. API requests proxy to the backend during development.
+
+### Configuration
+
+The backend reads several environment variables to enable optional integrations:
+
+- `PORT` – overrides the default backend port of `5000`.
+- `OPENAI_API_KEY` – enables the OpenAI LLM adapter when set.
+- `AUTH_SECRET` / `AUTH_TOKEN` – turn on lightweight JWT authentication for hosted setups.
+- `BASEROW_API_TOKEN`, `BASEROW_API_URL`, `BASEROW_BRAND_TABLE_ID` – configure the optional Baserow sync used by the brand profile service.
+
+Create a `.env` file in `backend/` or export the variables in your shell before running `npm run dev`.
 
 ### Swap to OpenAI
 
