@@ -40,5 +40,13 @@ export class InMemoryQueue<T> {
     }
 
     this.running = false;
+
+    // Handle the case where new tasks were enqueued while we were finishing
+    // the previous batch. In that scenario enqueue() would have seen the queue
+    // as "running" and returned early, so we need to kick the processor again
+    // now that we are idle.
+    if (this.queue.length > 0) {
+      this.process();
+    }
   }
 }
