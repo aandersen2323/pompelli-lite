@@ -11,8 +11,12 @@ import type { Job } from './types.js';
 
 export function buildServer() {
   const server = Fastify({ logger: true });
+
+  // CORS configuration: use ALLOWED_ORIGINS env var in production
+  // Defaults to permissive for local development
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map((o) => o.trim());
   server.register(cors, {
-    origin: true,
+    origin: allowedOrigins ?? true,
   });
 
   const authSecret = process.env.AUTH_SECRET;
@@ -41,23 +45,30 @@ export function buildServer() {
     });
   }
 
-  const queue = new InMemoryQueue<Job>(async (job) => {
-    const template = findTemplate(job.templateId);
-    job.templateId = template.id;
-    job.status = 'running';
-    job.updatedAt = new Date().toISOString();
-    saveJob(job);
-    try {
-      const results = await generateWithAdapter(job.input, job.templateId, job.n);
-      job.results = results;
-      job.status = 'done';
-    } catch (error) {
-      job.status = 'failed';
-      job.error = error instanceof Error ? error.message : 'Unknown error';
+  const queue = new InMemoryQueue<Job>(
+    async (job) => {
+      const template = findTemplate(job.templateId);
+      job.templateId = template.id;
+      job.status = 'running';
+      job.updatedAt = new Date().toISOString();
+      saveJob(job);
+      try {
+        const results = await generateWithAdapter(job.input, job.templateId, job.n);
+        job.results = results;
+        job.status = 'done';
+      } catch (error) {
+        job.status = 'failed';
+        job.error = error instanceof Error ? error.message : 'Unknown error';
+      }
+      job.updatedAt = new Date().toISOString();
+      saveJob(job);
+    },
+    {
+      onError: (taskId, error) => {
+        server.log.error(error, `Queue task ${taskId} failed`);
+      },
     }
-    job.updatedAt = new Date().toISOString();
-    saveJob(job);
-  });
+  );
 
   server.get('/api/v1/templates', () => ({ templates: TEMPLATES }));
 
@@ -70,6 +81,12 @@ export function buildServer() {
 
     if (!body?.input || body.input.trim().length === 0) {
       return reply.code(400).send({ error: 'input is required' });
+    }
+
+    // Input length validation to prevent memory issues
+    const MAX_INPUT_LENGTH = 10000;
+    if (body.input.length > MAX_INPUT_LENGTH) {
+      return reply.code(400).send({ error: `input exceeds maximum length of ${MAX_INPUT_LENGTH} characters` });
     }
 
     const templateId = body.templateId ?? 'default';
@@ -132,8 +149,10 @@ export function buildServer() {
 
       return { profile, baserow };
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      return reply.code(500).send({ error: message });
+      // Log full error server-side for debugging
+      server.log.error(error, 'Brand scan failed');
+      // Return generic error message to client to avoid exposing internal details
+      return reply.code(500).send({ error: 'Failed to scan brand profile' });
     }
   });
 

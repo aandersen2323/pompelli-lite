@@ -34,12 +34,15 @@ export default function App() {
   const templatesQuery = useQuery({
     queryKey: ['templates'],
     queryFn: fetchTemplates,
-    onSuccess(data) {
-      if (!templateId && data.templates.length > 0) {
-        setTemplateId(data.templates[0].id);
-      }
-    },
   });
+
+  // Set default template when templates are loaded (replaces deprecated onSuccess)
+  useEffect(() => {
+    const data = templatesQuery.data;
+    if (data && !templateId && data.templates.length > 0) {
+      setTemplateId(data.templates[0].id);
+    }
+  }, [templatesQuery.data, templateId]);
 
   const remoteHistoryQuery = useQuery({
     queryKey: ['remote-history'],
@@ -75,9 +78,11 @@ export default function App() {
   const mutation = useMutation({
     mutationFn: ({ text, template, n }: { text: string; template: string; n: number }) =>
       createJob(text, template, n),
-    onSuccess(data) {
-      setActiveJobId(data.jobId);
-      queryClient.invalidateQueries({ queryKey: ['remote-history'] });
+    onSettled(data) {
+      if (data) {
+        setActiveJobId(data.jobId);
+        queryClient.invalidateQueries({ queryKey: ['remote-history'] });
+      }
     },
   });
 
@@ -120,7 +125,7 @@ export default function App() {
 
   const activeJobStatus = jobQuery.data?.job?.status;
   const isLoadingJob =
-    mutation.isLoading || (activeJobStatus && activeJobStatus !== 'done' && activeJobStatus !== 'failed');
+    mutation.isPending || (activeJobStatus && activeJobStatus !== 'done' && activeJobStatus !== 'failed');
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">

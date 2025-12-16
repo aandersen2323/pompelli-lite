@@ -5,6 +5,7 @@ type QueueTask<T> = {
 };
 
 export type TaskHandler<T> = (payload: T) => Promise<void> | void;
+export type ErrorLogger = (taskId: string, error: unknown) => void;
 
 /**
  * A tiny in-memory queue that processes jobs sequentially.
@@ -13,8 +14,14 @@ export type TaskHandler<T> = (payload: T) => Promise<void> | void;
 export class InMemoryQueue<T> {
   private queue: QueueTask<T>[] = [];
   private running = false;
+  private readonly onError?: ErrorLogger;
 
-  constructor(private readonly handler: TaskHandler<T>) {}
+  constructor(
+    private readonly handler: TaskHandler<T>,
+    options?: { onError?: ErrorLogger }
+  ) {
+    this.onError = options?.onError;
+  }
 
   enqueue(id: string, payload: T) {
     this.queue.push({ id, payload, createdAt: Date.now() });
@@ -34,8 +41,9 @@ export class InMemoryQueue<T> {
       try {
         await this.handler(task.payload);
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(`Queue task ${task.id} failed`, error);
+        if (this.onError) {
+          this.onError(task.id, error);
+        }
       }
     }
 
